@@ -1,5 +1,7 @@
-from resources.xml_handler import XML_Handler
 from resources.init import Init
+from resources.xml_handler import XML_Handler
+from resources.format_output import Formatter
+from resources.lookup import Marketplace
 import concurrent.futures
 
 class Source_Environment:
@@ -8,7 +10,13 @@ class Source_Environment:
 		self.version = application_info[1]
 		self.dc = application_info[2]
 
-
+class Plugin:
+	def __init__(self, plugin_info):
+		self.key = plugin_info[0]
+		self.name = plugin_info[1]
+		self.version = plugin_info[2]
+		self.status = plugin_info[3]
+		self.bundled = plugin_info[4]
 
 def parse_check(proposed_path):
 	# prep executor for threading
@@ -17,21 +25,29 @@ def parse_check(proposed_path):
 	tasks = []
 	# verify path provided by flag "-f" 
 	xml_path = XML_Handler.find_xml(proposed_path)
-	env = XML_Handler.parse_env(xml_path)
-	print(env)    # for testing
-	for plugin in XML_Handler.parse_plugins(xml_path):
-		print(plugin)    # for testing
-		# prep thread for each plugin
-		#future = executor.submit(web_scrap, env, plugin)
-		# start thread
-		#tasks.append(future)
-	#concurrent.futures.wait(tasks)
+	application_info = XML_Handler.parse_env(xml_path)
+	environment = Source_Environment(application_info)
+	all_plugins = []
+	bundled_plugin = []
+	user_installed_plugin = []
+	for item in XML_Handler.parse_plugins(xml_path):
+		plugin = Plugin(item)
+		all_plugins.append(plugin.key)
+		if plugin.bundled.lower() == "bundled":
+			bundled_plugin.append(plugin.key)
+		else:
+			user_installed_plugin.append(plugin.key)
+			# prep thread for each plugin
+			future = executor.submit(Marketplace.lookup, environment, plugin)
+			# start new thread
+			tasks.append(future)
+	# wait for all threads to complete before completing
+	concurrent.futures.wait(tasks)
 
 def main():
 	options, args = Init.parse_input()
-	output = parse_check(options.filepath)
-	#formated_output = 
-	#output()
+	raw_output = parse_check(options.filepath)
+	clean_output = Formatter.format(raw_output)
 	exit("Complete")
 
 if __name__ == "__main__":
