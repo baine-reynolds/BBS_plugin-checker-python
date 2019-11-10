@@ -6,5 +6,4 @@ class Init:
 		parser.add_option('-f', '--file', dest='filepath', help="Path to application.xml file", metavar="FILE")
 		#parser.add_option('-q', '--quiet', action='count', dest='quiet', default=0, help="Decreases verbosity.")
 		options, args = parser.parse_args()
-		print(options.filepath)
 		return options, args

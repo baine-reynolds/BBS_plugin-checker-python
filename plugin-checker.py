@@ -3,6 +3,7 @@ from resources.xml_handler import XML_Handler
 from resources.format_output import Formatter
 from resources.lookup import Marketplace
 import concurrent.futures
+import time
 
 class Source_Environment:
 	def __init__(self, application_info):
@@ -37,18 +38,18 @@ def parse_check(proposed_path):
 			bundled_plugin.append(plugin.key)
 		else:
 			user_installed_plugin.append(plugin.key)
-			# prep thread for each plugin
-			future = executor.submit(Marketplace.lookup, environment, plugin)
 			# start new thread
-			tasks.append(future)
-	# wait for all threads to complete before completing
-	concurrent.futures.wait(tasks)
+			tasks.append(executor.submit(Marketplace.lookup,environment,plugin))
+	# wait for all threads to complete before proceeding
+	to_format = []
+	for f in concurrent.futures.as_completed(tasks):
+		print(f.result())
 
 def main():
 	options, args = Init.parse_input()
 	raw_output = parse_check(options.filepath)
 	clean_output = Formatter.format(raw_output)
-	exit("Complete")
+	exit("gracful stop")
 
 if __name__ == "__main__":
-    main()
+	main()
