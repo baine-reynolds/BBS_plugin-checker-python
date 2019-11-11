@@ -13,6 +13,7 @@ class Formatter:
 				not_latest.append(app)
 			else:
 				latest.append(app)
+		# Need to add feature to mark if plugin is disabled or not. 
 		if len(not_compatible) > 0:
 			print("The following Plugins are installed but not compatible with your current version of ",
 				env.product, ": ",env.version)
