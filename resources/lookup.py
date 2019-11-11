@@ -6,54 +6,57 @@ class Marketplace:
 	def lookup(env,plugin):
 		marketplace_Url = "https://marketplace.atlassian.com"
 		# web scrape the marketplace to find and validate the plugin
-		# curl for https://marketplace.atlassian.com/rest/2/addons/<plugin.key>
 		curl = requests.get(marketplace_Url+"/rest/2/addons/"+str(plugin.key))
 		if curl.status_code == 404:
-			results = ["unknown", plugin.key, plugin.version, env.product, env.version]
+			results = ["unknown", plugin.key, plugin.name, plugin.version, plugin.status]
 		else: # plugin found in marketplace
 			# parse for "_links"."alternate"."href" and remove "?tab=overview"
 			endpoint = curl.json()['_links']['alternate']['href']
 			endpoint_cleaned = endpoint.split('?')[0]
 			# resulting in "/apps/<app-id>/<package-name>"
-			# take new string and enter in https://atlassian.marketplace.com/<result_string>/version-history
 			raw_page = requests.get(marketplace_Url+"/"+str(endpoint_cleaned)+"/version-history")
-			# parse results
 			page = bs(raw_page.text, 'html.parser')
 			version_history = page.find(class_='plugin-versions')
 			all_versions = []
 			for version in version_history.find_all('li'):
 				number = version.find(class_='version')
 				compatibility = version.find(class_='compatible-apps')
-				#for spsn in version_compatibility:
-				#	version_compatibility = version_compatibility.find_all(class_='application').contents
 				if version == None or compatibility == None:
-					pass
+					results = ["unknown", plugin.key, plugin.name, plugin.version, plugin.status]
 				else:
 					version_number = str(number.contents).strip("[]'`")
-					version_compatibility = str(compatibility.contents).strip("[]'").replace('<span class="application">','').replace("</span>","").replace(" ',', <br/>, ","").replace("<br>","").replace("</br>","").split(',')
+					version_compatibility = str(compatibility.contents).strip("[]'")\
+						.replace('<span class="application">','').replace("</span>","")\
+						.replace(" ',', <br/>, ","").replace("<br>","").replace("</br>","").split(',')
 					for product in version_compatibility:
 						if "bitbucket" in product.lower():
 							relevant_compatibility = product
 					all_versions.append([version_number, relevant_compatibility])
-			results = Marketplace.compare(env,plugin,all_versions)
+					results = Marketplace.compare(env,plugin,all_versions)
 		return(results)
 
 
 	def compare(env,plugin,all_versions):
 		compatibility = "checked" # compatible_latest, compatible_old, incompatible, unknown
-		for env_version, actual_plugin_version, checked_plugin_version, version_minimum, version_maximum in Marketplace.parse_versions(env, plugin, all_versions):
-			pass
-			# work here next
-#			print("env, plugin, min, max")
-#			print(env_version)
-#			print(actual_plugin_version)
-#			print(checked_plugin_version)
-#			print(version_minimum)
-#			print(version_maximum)
-		# compatible and current
-		# compatible but not latest
-		# not-compatible
-		return([compatibility, plugin.key, plugin.version, env.product, env.version])
+		compatible_versions = []
+		compatible = False
+		for env_version, actual_plugin_version, checked_plugin_version, version_minimum, \
+			version_maximum in Marketplace.parse_versions(env, plugin, all_versions):
+			if env_version in range(version_minimum, version_maximum):
+				compatible = True
+				compatible_versions.append(checked_plugin_version)
+		latest = True
+		for version in compatible_versions:
+			if actual_plugin_version < version:
+				latest = False
+		if compatible == True and latest == True:
+			compatibility = "compatible_latest"
+		elif compatible == True and latest == False:
+			compatibility = "compatible_old"
+			# consider adding a "max(compatible_versions)" to return the actual "latest"
+		else: 
+			compatibility = "incompatible"
+		return([compatibility, plugin.key, plugin.name, plugin.version, plugin.status])
 
 	def parse_versions(env,plugin,all_versions):
 		dc_versions = []
@@ -69,12 +72,14 @@ class Marketplace:
 			for option in dc_versions:
 				checked_plugin_version = Marketplace.clean_individual(option[0])
 				version_minimum, version_maximum = Marketplace.clean_ranges(option[1])
-				yield env_version, actual_plugin_version, checked_plugin_version, version_minimum, version_maximum
+				yield env_version, actual_plugin_version, checked_plugin_version, \
+					version_minimum, version_maximum
 		else:
 			for option in server_versions:
 				checked_plugin_version = Marketplace.clean_individual(option[0])
 				version_minimum, version_maximum = Marketplace.clean_ranges(option[1])
-				yield env_version, actual_plugin_version, checked_plugin_version, version_minimum, version_maximum
+				yield env_version, actual_plugin_version, checked_plugin_version, \
+					version_minimum, version_maximum
 		# example: ['5.3.0', 'Bitbucket Data Center 5.2.0 - 6.8.0']
 
 	def clean_ranges(option):

@@ -28,14 +28,13 @@ def parse_check(proposed_path):
 	xml_path = XML_Handler.find_xml(proposed_path)
 	application_info = XML_Handler.parse_env(xml_path)
 	environment = Source_Environment(application_info)
-	all_plugins = []
-	bundled_plugin = []
+	disabled_bundled = []
 	user_installed_plugin = []
 	for item in XML_Handler.parse_plugins(xml_path):
 		plugin = Plugin(item)
-		all_plugins.append(plugin.key)
 		if plugin.bundled.lower() == "bundled":
-			bundled_plugin.append(plugin.key)
+			if plugin.status.lower() == "installed" or plugin.status.lower() == "disabled":
+				disabled_bundled.append(plugin.key)
 		else:
 			user_installed_plugin.append(plugin.key)
 			# start new thread
@@ -43,13 +42,15 @@ def parse_check(proposed_path):
 	# wait for all threads to complete before proceeding
 	to_format = []
 	for f in concurrent.futures.as_completed(tasks):
-		print(f.result())
+		to_format.append(f.result())
+	return disabled_bundled, to_format, environment
+
 
 def main():
 	options, args = Init.parse_input()
-	raw_output = parse_check(options.filepath)
-	clean_output = Formatter.format(raw_output)
-	exit("gracful stop")
+	disabled_bundled, raw_format, env = parse_check(options.filepath)
+	clean_output = Formatter.format(disabled_bundled, raw_format, env)
+	exit()
 
 if __name__ == "__main__":
 	main()
