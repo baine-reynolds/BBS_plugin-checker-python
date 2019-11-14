@@ -29,10 +29,12 @@ class XML_Handler:
 			dc = "true"
 		else: # if 1 node is in use, still check to see if clustering might be allowed
 			dc = temp[0].find('clustering-available').text
+			#print("Product: ",product, ",  Version: ",version, ",  DataCenter: ", dc)
 		return [product,version,dc]
 
 	def parse_plugins(xml_path):
 		app_xml = ET.parse(xml_path) # change to variable "input_xml" 
+		print("Parsing plugins...")
 		plugins = app_xml.find('plugins')
 		for plugin in plugins.iter('plugin'):
 			key = plugin.find('key').text
@@ -40,4 +42,5 @@ class XML_Handler:
 			version = plugin.find('version').text
 			status = plugin.find('status').text
 			bundled = plugin.find('bundled').text
+			#print(key, name, version, status, bundled)
 			yield [key,name,version,status,bundled]

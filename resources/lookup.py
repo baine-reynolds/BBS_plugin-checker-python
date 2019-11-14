@@ -22,9 +22,11 @@ class Marketplace:
 				number = version.find(class_='version')
 				compatibility = version.find(class_='compatible-apps')
 				if version == None or compatibility == None:
-					results = ["unknown", plugin.key, plugin.name, plugin.version, plugin.status]
+					pass
+					#results = ["notfound", plugin.key, plugin.name, plugin.version, plugin.status]
+					# sometimes causes issues
 				else:
-					version_number = str(number.contents).strip("[]'`")
+					version_number = re.sub("[A-z]", "", str(number.contents)).strip("[]'`").split("-")[0]
 					version_compatibility = str(compatibility.contents).strip("[]'")\
 						.replace('<span class="application">','').replace("</span>","")\
 						.replace(" ',', <br/>, ","").replace("<br>","").replace("</br>","").split(',')
@@ -42,7 +44,7 @@ class Marketplace:
 		compatible = False
 		for env_version, actual_plugin_version, checked_plugin_version, version_minimum, \
 			version_maximum in Marketplace.parse_versions(env, plugin, all_versions):
-			if env_version in range(version_minimum, version_maximum):
+			if int(env_version) in range(version_minimum, version_maximum):
 				compatible = True
 				compatible_versions.append(checked_plugin_version)
 		latest = True

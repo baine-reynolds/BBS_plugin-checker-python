@@ -32,7 +32,7 @@ def parse_check(proposed_path):
 	user_installed_plugin = []
 	for item in XML_Handler.parse_plugins(xml_path):
 		plugin = Plugin(item)
-		if plugin.bundled.lower() == "bundled":
+		if plugin.bundled.lower() == "bundled" or plugin.bundled.lower() == "bundled":
 			if plugin.status.lower() == "installed" or plugin.status.lower() == "disabled":
 				disabled_bundled.append(plugin.key)
 		else:
@@ -41,6 +41,7 @@ def parse_check(proposed_path):
 			tasks.append(executor.submit(Marketplace.lookup,environment,plugin))
 	# wait for all threads to complete before proceeding
 	to_format = []
+	print("Performing Marketplace lookups for each plugin...")
 	for f in concurrent.futures.as_completed(tasks):
 		to_format.append(f.result())
 	return disabled_bundled, to_format, environment
