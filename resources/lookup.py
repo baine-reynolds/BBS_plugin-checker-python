@@ -18,23 +18,23 @@ class Marketplace:
 			page = bs(raw_page.text, 'html.parser')
 			version_history = page.find(class_='plugin-versions')
 			all_versions = []
-			for version in version_history.find_all('li'):
-				number = version.find(class_='version')
-				compatibility = version.find(class_='compatible-apps')
-				if version == None or compatibility == None:
-					pass
-					#results = ["notfound", plugin.key, plugin.name, plugin.version, plugin.status]
-					# sometimes causes issues
+			for version in version_history.find_all('li', 'version-row'):
+				try:
+					version_number = version.find(class_='version').get_text()
+				except:
+					version_number = None #broken li object listing
+				try:
+					version_compatibility = version.find(class_='compatible-apps').get_text().split(',')
+				except:
+					version_compatibility = None
+				if version_number == None or version_compatibility == None:
+					pass #broken li object gathered, dumping results
 				else:
-					version_number = re.sub("[A-z]", "", str(number.contents)).strip("[]'`").split("-")[0]
-					version_compatibility = str(compatibility.contents).strip("[]'")\
-						.replace('<span class="application">','').replace("</span>","")\
-						.replace(" ',', <br/>, ","").replace("<br>","").replace("</br>","").split(',')
 					for product in version_compatibility:
-						if "bitbucket" in product.lower():
+						if env.product.lower() in product.lower():
 							relevant_compatibility = product
 					all_versions.append([version_number, relevant_compatibility])
-					results = Marketplace.compare(env,plugin,all_versions)
+			results = Marketplace.compare(env,plugin,all_versions)
 		return(results)
 
 
@@ -49,7 +49,7 @@ class Marketplace:
 				compatible_versions.append(checked_plugin_version)
 		latest = True
 		for version in compatible_versions:
-			if actual_plugin_version < version:
+			if int(actual_plugin_version) < int(version):
 				latest = False
 		if compatible == True and latest == True:
 			compatibility = "compatible_latest"
@@ -66,17 +66,19 @@ class Marketplace:
 		env_version = Marketplace.clean_individual(env.version)
 		actual_plugin_version = Marketplace.clean_individual(plugin.version)
 		for option in all_versions:
+			#print("option0: ", str(option[0]))
+			#print("option1: ", str(option[1]))
 			if "data center" in option[1].lower():
 				dc_versions.append(option)
 			else:
 				server_versions.append(option)
-		if env.dc == "true":
+		if env.dc == "true" and len(dc_versions) > 0:
 			for option in dc_versions:
 				checked_plugin_version = Marketplace.clean_individual(option[0])
 				version_minimum, version_maximum = Marketplace.clean_ranges(option[1])
 				yield env_version, actual_plugin_version, checked_plugin_version, \
 					version_minimum, version_maximum
-		else:
+		else: #check if a "server" version is available
 			for option in server_versions:
 				checked_plugin_version = Marketplace.clean_individual(option[0])
 				version_minimum, version_maximum = Marketplace.clean_ranges(option[1])
@@ -93,7 +95,7 @@ class Marketplace:
 			compatible_version = 0
 			for num in compatible_split:
 				compatible_version += int(num) * compatible_multiplier
-				compatible_multiplier = int(compatible_multiplier) / 1000
+				compatible_multiplier = compatible_multiplier / 1000
 			return int(float(compatible_version)), int(float(compatible_version))
 		elif len(option_numbers) == 2:
 			min_split = option_numbers[0].split(".")
@@ -101,13 +103,13 @@ class Marketplace:
 			min_version = 0
 			for num in min_split:
 				min_version += int(num) * min_multiplier
-				min_multiplier = int(min_multiplier) / 1000
+				min_multiplier = min_multiplier / 1000
 			max_split = option_numbers[1].split('.')
 			max_multiplier = 1000000000
 			max_version = 0
 			for num in max_split:
-				max_version += int(num) * int(max_multiplier)
-				max_multiplier = int(max_multiplier) / 1000
+				max_version += int(num) * max_multiplier
+				max_multiplier = max_multiplier / 1000
 			return int(float(min_version)), int(float(max_version))
 
 	def clean_individual(option):
@@ -118,5 +120,5 @@ class Marketplace:
 			version = 0
 			for num in split:
 				version += int(num) * multiplier
-				multiplier = int(multiplier) / 1000
+				multiplier = multiplier / 1000
 			return int(float(version))

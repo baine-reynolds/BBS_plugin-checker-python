@@ -2,6 +2,7 @@ from colorama import Fore, Style
 
 class Formatter:
 	def format(disabled_bundled, raw_apps, env):
+		print("Plugin compatibility for ",env.product," on version ",env.version)
 		not_compatible = []
 		not_latest = []
 		latest = []
