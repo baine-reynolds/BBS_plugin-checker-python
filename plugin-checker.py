@@ -21,7 +21,7 @@ class Plugin:
 
 def parse_check(proposed_path):
 	# prep executor for threading
-	executor = concurrent.futures.ProcessPoolExecutor()
+	executor = concurrent.futures.ThreadPoolExecutor()
 	# init empty list for threads
 	tasks = []
 	# verify path provided by flag "-f" 

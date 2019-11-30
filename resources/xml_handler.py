@@ -39,7 +39,7 @@ class XML_Handler:
 		for plugin in plugins.iter('plugin'):
 			key = plugin.find('key').text
 			name = plugin.find('name').text
-			version = plugin.find('version').text
+			version = plugin.find('version').text.split('-')[0]
 			status = plugin.find('status').text
 			bundled = plugin.find('bundled').text
 			#print(key, name, version, status, bundled)
