@@ -32,7 +32,7 @@ def parse_check(proposed_path):
 	user_installed_plugin = []
 	for item in XML_Handler.parse_plugins(xml_path):
 		plugin = Plugin(item)
-		if plugin.bundled.lower() == "bundled" or plugin.bundled.lower() == "bundled":
+		if plugin.bundled.lower() == "bundled":
 			if plugin.status.lower() == "installed" or plugin.status.lower() == "disabled":
 				disabled_bundled.append(plugin.key)
 		else:
