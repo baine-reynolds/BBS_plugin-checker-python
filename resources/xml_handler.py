@@ -44,6 +44,13 @@ class XML_Handler:
 				name = key
 			version = plugin.find('version').text.split('-')[0]
 			status = plugin.find('status').text
-			bundled = plugin.find('bundled').text
+			try:
+				bundled = plugin.find('bundled').text
+			except:
+				bundled = "unknown"
+				'''
+				failover for older application.xmls where no 'bundled' attribute is stored. 
+				This will cause all plugins to be checked rather than non-'bundled' causing longer processing time.
+				'''
 			#print(key, name, version, status, bundled)
 			yield [key,name,version,status,bundled]
