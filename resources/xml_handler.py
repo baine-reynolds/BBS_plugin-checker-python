@@ -38,7 +38,10 @@ class XML_Handler:
 		plugins = app_xml.find('plugins')
 		for plugin in plugins.iter('plugin'):
 			key = plugin.find('key').text
-			name = plugin.find('name').text
+			try:
+				name = plugin.find('name').text
+			except: #failover for older application.xmls where no name is stored.
+				name = key
 			version = plugin.find('version').text.split('-')[0]
 			status = plugin.find('status').text
 			bundled = plugin.find('bundled').text
