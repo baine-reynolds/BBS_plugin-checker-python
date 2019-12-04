@@ -24,7 +24,8 @@ class XML_Handler:
 		app_xml_root = app_xml.getroot()
 		product = app_xml_root.find('product').attrib.get('name')
 		#version = app_xml_root.find('product').attrib.get('version') # returns string like 6.2.1
-		version = app_xml_root.find('build-number').text  # returns string like 6002001 (6.2.1)
+		version = app_xml_root.find('bitbucket-information').find('build-number').text  # returns string like 6002001 (6.2.1)
+		# ^^ needs to be revised to support non-bitbucket applications
 		temp = app_xml_root.findall('cluster-information')
 		if len(temp) > 1: # if clustering is in use, first "cluster-information" lists the nodes in the cluster
 			dc = "true"
