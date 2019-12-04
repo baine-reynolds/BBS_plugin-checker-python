@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup as bs
 import re
 
 class Marketplace:
-	def lookup(env,plugin):
+	def lookup_old(env,plugin):
 		marketplace_Url = "https://marketplace.atlassian.com"
 		# web scrape the marketplace to find and validate the plugin
 		curl = requests.get(marketplace_Url+"/rest/2/addons/"+str(plugin.key))
@@ -38,6 +38,42 @@ class Marketplace:
 		return(results)
 
 
+
+
+
+
+	def lookup(env,plugin, paged_start=None, paged_limit=None):
+		results = []
+		while True:
+			marketplace_Url = "https://marketplace.atlassian.com"
+			versions_endpoint = "/rest/2/addons/"+plugin.key+"/versions"
+			params = {'application': env.product.lower(), 'applicationBuild': env.version, 'start': paged_start, 'limit': paged_limit}
+			headers = {'X-Atlassian-Token': 'nocheck', "Content-Type": "application/json", "Accept": "application/json"}
+			all_versions = []
+			r = requests.get(marketplace_Url+versions_endpoint, params=params, headers=headers)
+			if r.status_code == 404:
+				results = ["unknown", plugin.key, plugin.name, plugin.version, plugin.status]
+				return(results)
+			else: # plugin found in marketplace
+				plugin_uri = r.json()['_links']['alternate']['href']
+				plugin_url = marketplace_Url + plugin_uri.replace('/version-history', '')
+				for version in r.json()['_embedded']['versions']:
+					version_number = version['name']
+					if version['deployment']['server'] == True and version['deployment']['dataCenter'] == True:
+						product_compatibility = "both"
+					elif version['deployment']['server'] == True and version['deployment']['dataCenter'] == False:
+						product_compatibility = "server"
+					elif version['deployment']['server'] == False and version['deployment']['dataCenter'] == True:
+						product_compatibility = "dataCenter"
+					else:
+						product_compatibility = "server"
+						print("Defaulting to 'Server' compatibility as no plugin product details could be found.")
+					all_versions.append([version_number, product_compatibility])
+				results.append(Marketplace.compare(env,plugin,all_versions))
+			if r_data['isLastPage'] == True:
+				return(results)
+			paged_start = r_data['nextPageStart']
+
 	def compare(env,plugin,all_versions):
 		compatibility = "checked" # compatible_latest, compatible_old, incompatible, unknown
 		compatible_versions = []
@@ -66,9 +102,7 @@ class Marketplace:
 		env_version = Marketplace.clean_individual(env.version)
 		actual_plugin_version = Marketplace.clean_individual(plugin.version)
 		for option in all_versions:
-			#print("option0: ", str(option[0]))
-			#print("option1: ", str(option[1]))
-			if "data center" in option[1].lower():
+			if "datacenter" in option[1].lower():
 				dc_versions.append(option)
 			else:
 				server_versions.append(option)
