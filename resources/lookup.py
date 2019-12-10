@@ -18,7 +18,7 @@ class Marketplace:
 				r_data = r.json()
 				plugin_uri = r_data['_links']['alternate']['href']
 				plugin_url = marketplace_Url + plugin_uri.replace('/version-history', '')
-				for version in r_data['_embedded']['versions']:
+				for version in r_data['_embedded']['versions']:g
 					version_number = version['name']
 					if version['deployment']['server'] == True and version['deployment']['dataCenter'] == True:
 						product_compatibility = "both"
