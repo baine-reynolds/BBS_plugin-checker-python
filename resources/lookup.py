@@ -18,7 +18,8 @@ class Marketplace:
 				r_data = r.json()
 				plugin_uri = r_data['_links']['alternate']['href']
 				plugin_url = marketplace_Url + plugin_uri.replace('/version-history', '')
-				for version in r_data['_embedded']['versions']:g
+				
+				for version in r_data['_embedded']['versions']:
 					version_number = version['name']
 					if version['deployment']['server'] == True and version['deployment']['dataCenter'] == True:
 						product_compatibility = "both"
@@ -33,8 +34,22 @@ class Marketplace:
 			#if r_data['isLastPage'] == True:
 			gathering_plugin_data = False
 			#paged_start = r_data['nextPageStart']
-		results = [Marketplace.compare(env,plugin,all_versions), plugin.key, plugin.name, plugin.version, plugin.status]
+		temp_results, latest_possible = Marketplace.compare(env,plugin,all_versions)
+		results = [temp_results, plugin.key, plugin.name, plugin.version, plugin.status, latest_possible]
 		return(results)
+
+	def latest_check(plugin):
+		# Check to see if regardless of env, if the plugin located in app.xml is running the latest release possible.
+		marketplace_Url = "https://marketplace.atlassian.com"
+		api_endpoint = "/rest/2/addons/"+plugin.key+"/versions/latest"
+		r = requests.get(marketplace_Url+api_endpoint)
+		r_data = r.json()
+		latest_version = r_data['name']
+		if latest_version in plugin.version:
+			latest = True
+		else:
+			latest = False
+		return latest
 
 	def compare(env,plugin,all_versions):
 		# compatibility types = compatible_latest, compatible_old, incompatible, unknown
@@ -48,11 +63,14 @@ class Marketplace:
 				plugin_build_versions.append(version_cleaned)
 			if actual_plugin_version == max(plugin_build_versions):
 				compatibility = "compatible_latest"
+				latest_possible = True
 			else:
 				compatibility = "compatible_old"
+				latest_possible = False
 		else:  # no compatible versions found, aka incompatible
 			compatibility = "incompatible"
-		return(compatibility)
+			latest_possible = Marketplace.latest_check(plugin)
+		return compatibility, latest_possible
 
 	def clean_individual(option):
 		option_numbers = re.sub("[A-z]", "", option).strip(" ").split("-")
