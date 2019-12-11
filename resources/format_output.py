@@ -28,6 +28,12 @@ class Formatter:
 				print(markdown_setup_line)
 				for app in not_compatible:
 					print("|{color:red}",app[2],"{color}|{color:red}",app[1],"{color}|{color:red}",app[3],"{color}|")
+			if len(not_compatible_latest) > 0:
+				print("\nh3. The following Plugins are installed but NOT COMPATIBLE with your current version of " + 
+					env.product + ": " + env.version + ", however, there are no newer releases. We recommend disabling these plugins and finding alternatives.")
+				print(markdown_setup_line)
+				for app in not_compatible_latest:
+					print("|{color:red}",app[2],"{color}|{color:red}",app[1],"{color}|{color:red}",app[3],"{color}|")
 			if len(not_latest) > 0:
 				print("\nh3. The following Plugins are COMPATIBLE with your current version of ",
 					env.product, " but are NOT running the latest version. ",
