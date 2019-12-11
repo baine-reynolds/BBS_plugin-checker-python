@@ -3,7 +3,6 @@ from resources.xml_handler import XML_Handler
 from resources.format_output import Formatter
 from resources.lookup import Marketplace
 import concurrent.futures
-import time
 
 __author__ = "Michael Walker"
 __maintainer__ = "Michael Walker"
