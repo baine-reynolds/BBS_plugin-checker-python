@@ -19,11 +19,9 @@ class XML_Handler:
 			return xml_path
 
 	def parse_env(xml_path):
-		# init xml object based on xml_path
 		app_xml = ET.parse(xml_path)
 		app_xml_root = app_xml.getroot()
 		product = app_xml_root.find('product').attrib.get('name')
-		#version = app_xml_root.find('product').attrib.get('version') # returns string like 6.2.1
 		version = app_xml_root.find('bitbucket-information').find('build-number').text  # returns string like 6002001 (6.2.1)
 		# ^^ needs to be revised to support non-bitbucket applications
 		temp = app_xml_root.findall('cluster-information')
