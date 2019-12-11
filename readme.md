@@ -12,3 +12,7 @@ You can also add the "-m" flag at the end to set markdown formatting to be copie
 * [Requests](http://docs.python-requests.org/en/master/)
 
         pip3 install requests --user
+
+* [Colorama](https://pypi.org/project/colorama/)
+
+        pip3 install colorama --user
