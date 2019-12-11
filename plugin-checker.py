@@ -5,6 +5,10 @@ from resources.lookup import Marketplace
 import concurrent.futures
 import time
 
+__author__ = "Michael Walker"
+__maintainer__ = "Michael Walker"
+__email__ = "michaelchwalker@gmail.com"
+
 class Source_Environment:
 	def __init__(self, application_info):
 		self.product = application_info[0]
@@ -50,7 +54,7 @@ def parse_check(proposed_path):
 def main():
 	options, args = Init.parse_input()
 	disabled_bundled, raw_format, env = parse_check(options.filepath)
-	clean_output = Formatter.format(disabled_bundled, raw_format, env)
+	Formatter.format(disabled_bundled, raw_format, env, options.markdown)
 	exit()
 
 if __name__ == "__main__":
