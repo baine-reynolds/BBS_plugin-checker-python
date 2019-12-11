@@ -5,7 +5,7 @@ Run the "plugin-checker.py" file pointed at an application.xml file from a Bitbu
 
 You can also add the "-m" flag at the end to set markdown formatting to be copied directly into Jira or Confluence.
 
-        python3 plugin-checker.py -f /path/to/application.xml
+        python3 plugin-checker.py -f /path/to/application.xml -m
 
 # Dependencies:
 * [Python3](https://www.python.org/downloads/) This was written in python3.7 and requires at least 3.2+ to operate as expected.
