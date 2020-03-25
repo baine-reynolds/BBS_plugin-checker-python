@@ -22,15 +22,25 @@ class XML_Handler:
 		app_xml = ET.parse(xml_path)
 		app_xml_root = app_xml.getroot()
 		product = app_xml_root.find('product').attrib.get('name')
-		version = app_xml_root.find('bitbucket-information').find('build-number').text  # returns string like 6002001 (6.2.1)
-		# ^^ needs to be revised to support non-bitbucket applications
-		temp = app_xml_root.findall('cluster-information')
-		if len(temp) > 1: # if clustering is in use, first "cluster-information" lists the nodes in the cluster
-			dc = "true"
-		else: # if 1 node is in use, still check to see if clustering might be allowed
-			dc = temp[0].find('clustering-available').text
-			#print("Product: ",product, ",  Version: ",version, ",  DataCenter: ", dc)
-		return [product,version,dc]
+		if product.lower() == 'bitbucket':
+			build_number = app_xml_root.find('bitbucket-information').find('build-number').text  # returns string like 6002001 (6.2.1)
+			# ^^ needs to be revised to support non-bitbucket applications
+			temp = app_xml_root.findall('cluster-information')
+			if len(temp) > 1: # if clustering is in use, first "cluster-information" lists the nodes in the cluster
+				dc = "true"
+			else: # if 1 node is in use, still check to see if clustering might be allowed
+				dc = temp[0].find('clustering-available').text
+				#print("Product: ",product, ",  Build_number: ",build_number, ",  DataCenter: ", dc)
+		elif product.lower() == 'confluence':
+			build_number = app_xml_root.find('application-information').find('build-number').text
+			clusternode = app_xml_root.findall('cluster-information')
+			if (len(clusternode) > 0):
+				dc = True
+			else:
+				dc = False
+		# add elif for jira, fecru, bamboo... etc.
+		return [product,build_number,dc]
+
 
 	def parse_plugins(xml_path):
 		app_xml = ET.parse(xml_path) # change to variable "input_xml" 
