@@ -7,9 +7,13 @@ class Formatter:
 		not_latest = []
 		latest = []
 		unknown = [] # Will likely consist of "Provided" status plugins
+		unknown_com_atl = []
 		for app in raw_apps:
 			if app[0] == "unknown":
-				unknown.append(app)
+				if "com.atlassian" in str(app[1]):
+					unknown_com_atl.append(app)
+				else:
+					unknown.append(app)
 			elif app[0] == "incompatible" and app[5] == False:
 				not_compatible.append(app)
 			elif app[0] == "incompatible" and app[5] == True: #incompatible, but running the latest release possible meaning that upgrading isn't possible
@@ -50,6 +54,11 @@ class Formatter:
 				print(markdown_setup_line)
 				for app in unknown:
 					print(f"|{{color:grey}}{app[2]}{{color}}|{{color:grey}}{app[1]}{{color}}|{{color:grey}}{app[3]}{{color}}|")
+			if len(unknown_com_atl) > 0:
+				print(f"\nh3. The following Plugins are likely system plugins.")
+				print(markdown_setup_line)
+				for app in unknown_com_atl:
+					print(f"|{{color:grey}}{app[2]}{{color}}|{{color:grey}}{app[1]}{{color}}|{{color:grey}}{app[3]}{{color}}|")
 			if len(disabled_bundled) > 0:			
 				print(f"\nh3. The following are Apps that are apart of {env.product} itself that are currently disabled." + 
 					"\nWe Highly recommend re-enableing these apps.")
@@ -80,6 +89,10 @@ class Formatter:
 				print(f"\nThe following Plugins were not identified in the marketplace, meaning that they are likely in-house custom plugins, \
 					system plugins, or the version number could not be parsed successfully.")
 				for app in unknown:
+					print(Fore.WHITE + f"  Name:{app[2]}   Key:{app[1]}   Current Version:{app[3]}" + Style.RESET_ALL)
+			if len(unknown_com_atl) > 0:
+				print(f"\nThe following Plugins are likely system plugins.")
+				for app in unknown_com_atl:
 					print(Fore.WHITE + f"  Name:{app[2]}   Key:{app[1]}   Current Version:{app[3]}" + Style.RESET_ALL)
 			if len(disabled_bundled) > 0:			
 				print(f"\nThe following are Apps that are apart of {env.product} itself that are currently disabled." + 
