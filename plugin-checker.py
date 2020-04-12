@@ -1,7 +1,7 @@
 from resources.init import Init
 from resources.xml_handler import XML_Handler
 from resources.format_output import Formatter
-from resources.lookup import Marketplace
+from resources.lookup import Marketplace, SelfCheck
 import concurrent.futures
 
 __author__ = "Michael Walker"
@@ -51,6 +51,7 @@ def parse_check(proposed_path):
 
 
 def main():
+	SelfCheck.new_version_checker()
 	options, args = Init.parse_input()
 	disabled_bundled, raw_format, env = parse_check(options.filepath)
 	Formatter.format(disabled_bundled, raw_format, env, options.markdown)

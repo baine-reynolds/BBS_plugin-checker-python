@@ -1,5 +1,8 @@
 import requests
 import re
+import subprocess
+from os import getcwd, chdir
+import pathlib
 
 class Marketplace:
 	def lookup(env,plugin, paged_start=None, paged_limit=None, gathering_plugin_data = True):
@@ -80,3 +83,36 @@ class Marketplace:
 			version += int(num) * multiplier
 			multiplier = multiplier / 1000
 		return int(float(version))
+
+class SelfCheck():
+	def new_version_checker():
+		current_path = getcwd()
+		repo_path = pathlib.Path(__file__).parent
+		# retrieve the standard output from running "git show-ref HEAD" to compare against the HEAD of the Github repo
+		try:
+			chdir(repo_path)
+			out = subprocess.Popen(['git', 'show-ref', 'HEAD'], stdout=subprocess.PIPE)
+			# stdout is a tuple by default so we need to parse down to the needed sha
+			stdout = out.communicate()
+			# Pulls the bytes object from the tuple and converts it to a string. Then removes the unneeded bits at the start and end
+			this_version = str(stdout[0]).split(' ')[0][2:]
+			# return to working dir
+			chdir(current_path)
+		except:
+			# No content to work with, no reason to continue
+			return
+
+		r = requests.get("https://api.github.com/repos/baine-reynolds/BBS_plugin-checker-python/branches/master")
+		if r.status_code in [200, 202]: # 'OK' or 'Accepted' status codes
+			current_version = r.json()['commit']['sha']
+
+		try:
+			if this_version == current_version:
+				print("Plugin_check is up to date!\n")
+				return
+			else:
+				print("The version of this Plugin Check does not match the HEAD of master, considering checking for updates.\n")
+				return
+		except NameError:
+			print("Could not verify local or remote version, feel free to check the upstream for updates.\n")
+			return
