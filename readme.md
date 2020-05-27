@@ -8,7 +8,7 @@ You can also add the "-m" flag at the end to set markdown formatting to be copie
         python3 plugin-checker.py -f /path/to/application.xml -m
 
 # Dependencies:
-* [Python3](https://www.python.org/downloads/) This was written in python3.7 and requires at least 3.2+ to operate as expected.
+* [Python3](https://www.python.org/downloads/) This was written in python3.7 and requires at least 3.5+ to operate as expected.
 * [Requests](http://docs.python-requests.org/en/master/)
 
         pip3 install requests --user
