@@ -29,7 +29,6 @@ class Marketplace:
 						product_compatibility = "dataCenter"
 					else:
 						product_compatibility = "server"
-						print("Defaulting to 'Server' compatibility as no plugin product details could be found.")
 					all_versions.append([version_number, product_compatibility])
 			#if r_data['isLastPage'] == True:
 			gathering_plugin_data = False
