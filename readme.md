@@ -16,3 +16,12 @@ You can also add the "-m" flag at the end to set markdown formatting to be copie
 * [Colorama](https://pypi.org/project/colorama/)
 
         pip3 install colorama --user
+
+* [Logzero](https://pypi.org/project/logzero/)
+
+        pip3 install logzero --user
+
+Or Install all dependencies at once via the requirements.txt file
+
+        pip3 install -r requirements.txt
+
