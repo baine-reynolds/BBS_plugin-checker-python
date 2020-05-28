@@ -18,7 +18,6 @@ class Marketplace:
 				return(results)
 			else: # plugin found in marketplace
 				r_data = r.json()
-				plugin_uri = r_data['_links']['alternate']['href']
 				
 				for version in r_data['_embedded']['versions']:
 					version_number = version['name']
